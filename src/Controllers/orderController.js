@@ -10,7 +10,7 @@ const orderCreate = async function (req, res) {
     try {
         let user_id = req.params.userId
         let data = req.body
-
+        let cardId = data.cardId
         let user = await userModel.findById(user_id)
         if (!user) return res.status(404).send({ status: false, msg: "User not found" })
 
@@ -57,7 +57,7 @@ const orderCreate = async function (req, res) {
         }
 
 
-        let cartData = await cartModel.findOne({ userId: user_id }).select({ _id: 0, createdAt: 0, updatedAt: 0, __v: 0 })
+        let cartData = await cartModel.findOne({_id:cardId, userId: user_id }).select({ _id: 0, createdAt: 0, updatedAt: 0, __v: 0 })
         if (!cartData) {
             return res.status(400).send({ status: false, message: "NO cart exist for this user" })
         }
@@ -77,7 +77,7 @@ const orderCreate = async function (req, res) {
         let order = {
             userId: cartData.userId,
             items: [{
-                productId: productId,
+                productId: cartData.productId,
                 quantity: quantity
             }],
             status: status,
@@ -156,10 +156,7 @@ const updateOrder = async function (req, res) {
         if (!Validator.isValid(orderId)) {
             return res.status(400).send({ status: false, message: "provide orderId in request body" })
         }
-        if (!Validator.isValidObjectId(orderId)) {
-            return res.status(400).send({ status: false, message: "provide Valid cartId in request body" })
-        }
-
+    
 
         let orderPresent = await orderModel.findOne({ _id: orderId, isDeleted: false })
 
@@ -175,8 +172,8 @@ const updateOrder = async function (req, res) {
                 return res.status(400).send({ status: false, message: "status should be-'pending','completed','cancled'" })
         
 
-        if (status == "pending" || status == "completed") {
-            return res.status(400).send({ status: false, message: "status can not be pending and completed" })
+        if (status == "pending" || status == "cancel") {
+            return res.status(400).send({ status: false, message: "status can not be pending and cencel" })
         }
        
     

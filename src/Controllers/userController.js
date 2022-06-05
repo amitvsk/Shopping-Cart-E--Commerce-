@@ -44,7 +44,7 @@ const userCreate = async function (req, res) {
         }
 
 
-        if (!phone) return res.status(400).send({ status: false, message: "Phone is Required" });
+        if (!Validator.isValid(phone)) return res.status(400).send({ status: false, message: "Phone is Required" });
         if (!Validator.isValidPhone(phone)) return res.status(400).send({ status: false, message: "Invalid phone number : must contain 10 digit and only number." });
 
         //check unique phone
@@ -145,12 +145,12 @@ const getUserById = async function (req, res) {
         //validate the userId
         if (!Validator.isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Invalid userId" })
         let userData = await userModel.findById(userId,{password:0}).lean()
-            
+          if (!userData) return res.status(404).send({ status: false, message: "User is not found " })   
         // find cart of the user 
         let cartUser = await cartModel.findOne({userId:userId})
         if(cartUser) userData.cartId = cartUser._id // if the cart are exixts then add in userData
 
-        if (!userData) return res.status(404).send({ status: false, message: "User is not found " })
+       
         return res.status(200).send({ status: true, message: "user profile details", data: userData })
     } catch (err) {
         res.status(500).send({ status: false, message: err.message })
